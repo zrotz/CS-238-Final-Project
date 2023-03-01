@@ -1,4 +1,4 @@
-import MDP
+from MDP import *
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -28,6 +28,7 @@ def main():
         plt.figure(1)
         plt.imshow(U, origin = "lower", extent = (0, 1, 0, 15))
         plt.colorbar()
+        plt.show()
     else:
         traj = [0] # initial position
     while True:
@@ -37,9 +38,10 @@ def main():
         if traj[-1] >= nstates-1:
             break
     plt.figure(2)
-    plt.plot(np.arange(0, len(traj))+1, traj)
+    plt.scatter(np.arange(0, len(traj))+1, traj)
     plt.xlabel("Iteration")
     plt.ylabel("Bus State")
+    plt.savefig("./plots/bus_traj.png")
 
 if __name__ == "__main__":
     main()

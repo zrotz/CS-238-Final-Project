@@ -35,7 +35,7 @@ class MDP:
       plt.figure(1)
       plt.imshow(U, extent = (0, 1, 0, 15), origin = "lower")
       plt.colorbar()
-      plt.title("Reward at pedestrian crossing")
+      plt.savefig("./plots/reward_crossing.png")
       return s
 
   def __get_a(self, U, s):
