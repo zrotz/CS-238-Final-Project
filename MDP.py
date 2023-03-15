@@ -62,7 +62,9 @@ class MDP:
             reward = self._bc if a == 0 else 0
             reward +=  self._tr if bs == (rlen - 1) else 0  # check terminal state
             # reward += self._bc if bs < rlen else self._tr # check terminal state
-            reward += self._cc if bs == ps else 0 # check collision
+
+            reward += self._cc if (bs == ps) and (os == 1) else 0 # check collision
+            # reward += self._cc if bs == ps else 0 # check collision
             return reward
             
     def __init__(self, s0 : tuple, A : int, cost : tuple, env : tuple, g : float):
