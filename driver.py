@@ -26,8 +26,8 @@ def visualize_1(model : MDP, Q, rl : int):
     ped_y = np.random.randint(1, rl)
     ped_x = np.random.randint(0, 3)
 
-    cur_state = model.State((bus_location, ped_y, 1 if ped_x == 1 else 0))
-    # cur_state = model.State((0, 5, 0))
+    # cur_state = model.State((bus_location, ped_y, 1 if ped_x == 1 else 0))
+    cur_state = model.State((0, 4, 0))
 
     while cur_state._bs != (rl - 1): 
         a = np.argmax(Q[cur_state.get_idx(rl)][:])
@@ -79,7 +79,7 @@ def viz(Q, l):
 def main():
     s0 = (0, 5, 0) # bus at start, ped. at row 5 on sidewalk
     A = 2 # action space = [0, 1]; len(A) = 2
-    cost = (-0.5, -200, 20) # base line and collision cost and terminal reward
+    cost = (-1, -200, 20) # base line and collision cost and terminal reward
     env = (15, 0.33) # road length, pedestrian randomness (chance enters road)
     g = 0.4
     model = MDP(s0, A, cost, env, g)
