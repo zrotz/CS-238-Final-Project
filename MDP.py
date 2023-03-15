@@ -59,7 +59,8 @@ class MDP:
         def reward(self, s, a : int, rlen : int):
             bs, ps, os = s.get_tup() # return state tuple
             
-            reward = self._bc if bs < rlen else self._tr # check terminal state
+            reward = -1 if a == 0 else 0
+            reward += self._bc if bs < rlen else self._tr # check terminal state
             reward += self._cc if bs == ps else 0 # check collision
             return reward
             

@@ -27,6 +27,7 @@ def visualize_1(model : MDP, Q, rl : int):
     ped_x = np.random.randint(0, 3)
 
     cur_state = model.State((bus_location, ped_y, 1 if ped_x == 1 else 0))
+    # cur_state = model.State((0, 5, 0))
 
     while cur_state._bs != (rl - 1): 
         a = np.argmax(Q[cur_state.get_idx(rl)][:])
@@ -88,8 +89,8 @@ def main():
     epoch = 1e4
     Q = exploration(model, lr, meta, epoch)
 
-    # visualize_1(model, Q, 15)
-    viz(Q, 15)
+    visualize_1(model, Q, 15)
+    # viz(Q, 15)
 
 
 if __name__ == "__main__":
