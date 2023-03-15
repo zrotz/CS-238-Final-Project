@@ -37,7 +37,7 @@ class MDP:
             bs, ps, os = s.get_tup() # current state
 
             if np.random.rand() < self._pr: # pedestrian update
-                os = 1
+                os = 0 if bs == ps else 1
             else:
                 ps = ps if os else np.clip(ps + np.random.choice([-1, 1]), 0, self._l-1)
                 os = 0

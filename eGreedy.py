@@ -11,7 +11,7 @@ class eGreedy:
         self._eps = self._reset
 
     def next_action(self, s : int, Q):
-        if np.max(Q[s, :]) == 0 or np.random.random() < self._eps: # use random action at explored state
+        if (np.max(Q[s, :]) == 0 and np.min(Q[s, :]) == 0) or np.random.random() < self._eps: # use random action at explored state
             return np.random.randint(0, self._MDP.A) # explore
         else:
             return np.argmax(Q[s, :]) # exploit
