@@ -19,7 +19,7 @@ def exploration(model : MDP, lr : float, meta : tuple, epoch : int):
         model.S.reset()
     return ql.Q
 
-def visualize_heatmap(model : MDP, Q, rl : int):
+def visualize_1(model : MDP, Q, rl : int):
     bus_location = 0
     ped_y = np.random.randint(1, rl)
     ped_x = np.random.randint(0, 3)
@@ -55,7 +55,7 @@ def main():
     epoch = 1e4
     Q = exploration(model, lr, meta, epoch)
 
-    visualize_heatmap(model, Q, 15)
+    visualize_1(model, Q, 15)
 
 
 if __name__ == "__main__":
