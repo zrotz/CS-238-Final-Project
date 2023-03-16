@@ -34,25 +34,24 @@ def exploration(model : MDP, lr : float, meta : tuple, epoch : int):
     viz_r.plot_rewards()
     return ql.Q
 
-# Zach's visualization
-def visualize_1(model : MDP, Q, rl : int):
-    bus_location = 0
-    ped_y = np.random.randint(1, rl)
-    ped_x = np.random.randint(0, 3)
 
-    cur_state = model.State((bus_location, ped_y, 1 if ped_x == 1 else 0))
-    # cur_state = model.State((0, 4, 0))
+def exploitation(model : MDP, Q, rl : int, epoch : int):
+    viz_r = RewardViz(epoch, "Rewards during exploitation")
 
-    while cur_state._bs != (rl - 1): 
-        a = np.argmax(Q[cur_state.get_idx(rl)][:])
-        print(cur_state._bs, cur_state._ps, cur_state._os, a)
+    for _ in tqdm(np.arange(epoch)):
+        model.S.reset()
+        total_r = 0
 
-        bs, ps, os = model.T.update(cur_state, a)
-        cur_state = model.State((bs, ps, os))
+        while model.S._bs != (rl - 1): 
+            a = np.argmax(Q[model.S.get_idx()][:])
+            r = model.R.reward(model.S, a)
+            total_r += r
+            bsp, psp, osp = model.T.update(model.S, a)
+            model.S.set_tup((bsp, psp, osp))
 
+        viz_r.update(total_r)
 
-    # end state
-    print(cur_state._bs, cur_state._ps, cur_state._os)
+    viz_r.plot_rewards()
 
 # Matt's visualization
 def viz(model, Q):
@@ -112,8 +111,8 @@ def main():
     file = input("Save Q to file [.npy]: ")
     np.save(file, Q)
 
-    # visualize_1(model, Q, 15)
-    viz(model, Q)
+    exploitation(model, Q, 15, epoch)
+    # viz(model, Q)
 
 
 if __name__ == "__main__":
