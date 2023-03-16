@@ -28,8 +28,8 @@ def visualize_1(model : MDP, Q, rl : int):
     ped_y = np.random.randint(1, rl)
     ped_x = np.random.randint(0, 3)
 
-    # cur_state = model.State((bus_location, ped_y, 1 if ped_x == 1 else 0))
-    cur_state = model.State((0, 4, 0))
+    cur_state = model.State((bus_location, ped_y, 1 if ped_x == 1 else 0))
+    # cur_state = model.State((0, 4, 0))
 
     while cur_state._bs != (rl - 1): 
         a = np.argmax(Q[cur_state.get_idx(rl)][:])
@@ -94,7 +94,7 @@ def main():
     file = input("Save Q to file [.npy]: ")
     np.save(file, Q)
 
-    # visualize_1(model, Q, 15)
+    visualize_1(model, Q, 15)
     viz(model, Q)
 
 

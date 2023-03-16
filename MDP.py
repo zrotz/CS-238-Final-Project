@@ -5,14 +5,14 @@ class MDP:
         def __init__(self, s0 : tuple): 
             assert s0[1] > 1 # valid random interval
             self._bs = s0[0] # bus row loc
-            self._ps = np.random.randint(1, s0[1]) # random row loc; s0[1] road length
-            self._os = s0[2] # ped. in road
+            self._ps = np.random.randint(0, s0[1]) # random row loc; s0[1] road length
+            self._os = 0 if self._ps == 0 else s0[2] # ped. in road
             self._reset = s0 # store init. for reset
 
         def reset(self):
             self._bs = self._reset[0]
-            self._ps = np.random.randint(1, self._reset[1])
-            self._os = self._reset[2]
+            self._ps = np.random.randint(0, self._reset[1])
+            self._os = 0 if self._ps == 0 else np.random.randint(0, 2)
 
         def get_tup(self): # return MDP state as a tuple
             return (self._bs, self._ps, self._os)
