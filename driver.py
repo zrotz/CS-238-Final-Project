@@ -7,17 +7,19 @@ from tqdm import tqdm
 def exploration(model : MDP, lr : float, meta : tuple, epoch : int):
     ql = QLearning(model, lr)
     eg = eGreedy(model, meta)
-    rlen = model.T.get_length()
 
     for _ in tqdm(np.arange(epoch)):
-        while eg.decay() > 1e-2:
-            a = eg.next_action(model.S.get_idx(rlen), ql.Q) # sample action from exp. policy
+        while True:
+            a = eg.next_action(model.S.get_idx(), ql.Q) # sample action from exp. policy
             bsp, psp, osp = model.T.update(model.S, a) # next state
-            r = model.R.reward(model.S, a, rlen-1) # get next reward
-            ql.update(model.S.get_idx(rlen), a, r, MDP.State((bsp, psp, osp)).get_idx(rlen)) # update ql
-            model.S.set_tup((bsp, psp, osp)) # update model state
-        eg.reset()
+            r = model.R.reward(model.S, a) # get next reward
+            ql.update(model.S.get_idx(), a, r, model.S.tup_to_idx(bsp, psp, osp)) # update ql
+            if model.S.get_bs() < model.S.get_rl()-1:
+                model.S.set_tup((bsp, psp, osp)) # update model state
+            else:
+                break
         model.S.reset()
+        eg.decay()
     return ql.Q
 
 # Zach's visualization
@@ -41,14 +43,15 @@ def visualize_1(model : MDP, Q, rl : int):
     print(cur_state._bs, cur_state._ps, cur_state._os)
 
 # Matt's visualization
-def viz(Q, l):
+def viz(model, Q):
+    l = model.S.get_rl()
     Q0 = np.zeros((l, l, 2))
     Q1 = np.zeros((l, l, 2))
 
     for ps in np.arange(l):
         for bs in np.arange(l):
-            osf = MDP.State((bs, ps, 0)).get_idx(l) # pedestrian not in street
-            ost = MDP.State((bs, ps, 1)).get_idx(l) # pedestrian in street
+            osf = model.S.tup_to_idx(bs, ps, 0) # pedestrian not in street
+            ost = model.S.tup_to_idx(bs, ps, 1) # pedestrian in street
 
             Q0[ps, bs, 0] = Q[osf, 0] # ped. on sidewalk
             Q0[ps, bs, 1] = Q[ost, 0] # ped. in road
@@ -77,21 +80,31 @@ def viz(Q, l):
 
 
 def main():
-    s0 = (0, 5, 0) # bus at start, ped. at row 5 on sidewalk
+    s0 = (0, 15, 0) # bus at start, road length, ped. on sidewalk
     A = 2 # action space = [0, 1]; len(A) = 2
     cost = (-1, -200, 20) # base line and collision cost and terminal reward
-    env = (15, 0.33) # road length, pedestrian randomness (chance enters road)
-    g = 0.4
-    model = MDP(s0, A, cost, env, g)
+    pr = 0.33 # pedestrian randomness (chance enters road)
+    g = 0.6
+    model = MDP(s0, A, cost, pr, g)
 
     lr = 0.2 # learning rate
-    meta = (0.41, 0.97) # epsilon, decay rate
-    epoch = 1e4
+    meta = np.array([0.4, 0.9999], dtype = np.float64) # epsilon, decay rate
+    epoch = 1e5
     Q = exploration(model, lr, meta, epoch)
+    file = input("Save Q to file [.npy]: ")
+    np.save(file, Q)
 
-    visualize_1(model, Q, 15)
-    # viz(Q, 15)
+    # visualize_1(model, Q, 15)
+    viz(model, Q)
 
 
 if __name__ == "__main__":
     main()
+
+# 3/15/23 notes
+# 1) randomly initialize pedestrian position
+# 2) logic pedestrian not enter road when the bus is there => done
+# 3) revise collision check in reward => done
+# 4) decay epsilon with each journey, e = 0.7 dr = 0.999, stop at 1%
+#       end journey at terminal state
+# increase gamma or consider penalizing stay 
