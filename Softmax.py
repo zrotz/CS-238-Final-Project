@@ -11,7 +11,7 @@ class Softmax:
         weights = [math.exp(self._l * Q[s][0]), math.exp(self._l * Q[s][1])]
         t = sum(weights)
         norm_weights = [i/t for i in weights]
-        return r.choice([0,1], norm_weights)
+        return r.choice([0,1], p=norm_weights)
     
     def decay(self):
         self._l *= self._a
