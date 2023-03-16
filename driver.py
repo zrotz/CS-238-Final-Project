@@ -2,27 +2,36 @@ from MDP import *
 from QLearning import *
 from eGreedy import *
 from Softmax import *
+from GraphViz import *
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 def exploration(model : MDP, lr : float, meta : tuple, epoch : int):
-    ql = QLearning(model, lr)
-    # ex = eGreedy(model, meta)
-    ex = Softmax(meta)
+    viz_r = RewardViz(epoch, "Rewards during exploration")
 
+    ql = QLearning(model, lr)
+    ex = eGreedy(model, meta)
+    # ex = Softmax(meta)
 
     for _ in tqdm(np.arange(epoch)):
+        total_r = 0
+
         while True:
             a = ex.next_action(model.S.get_idx(), ql.Q) # sample action from exp. policy
             bsp, psp, osp = model.T.update(model.S, a) # next state
             r = model.R.reward(model.S, a) # get next reward
+            total_r += r
             ql.update(model.S.get_idx(), a, r, model.S.tup_to_idx(bsp, psp, osp)) # update ql
             if model.S.get_bs() < model.S.get_rl()-1:
                 model.S.set_tup((bsp, psp, osp)) # update model state
             else:
                 break
+
         model.S.reset()
         ex.decay()
+        viz_r.update(total_r)
+
+    viz_r.plot_rewards()
     return ql.Q
 
 # Zach's visualization
@@ -93,10 +102,10 @@ def main():
     lr = 0.2 # learning rate
 
     # e-greedy
-    # meta = np.array([0.4, 0.9999], dtype = np.float64) # epsilon, decay rate
+    meta = np.array([0.4, 0.9999], dtype = np.float64) # epsilon, decay rate
 
     # softmax
-    meta = (0.1, 1.012)  # precision parameter, precision factor (>decay = higher num)
+    # meta = (0.1, 1.012)  # precision parameter, precision factor (>decay = higher num)
 
     epoch = 1e5
     Q = exploration(model, lr, meta, epoch)
