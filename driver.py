@@ -104,10 +104,10 @@ def main():
         meta = np.array([0.4, 0.9999], dtype = np.float64) # epsilon, decay rate
         ex = eGreedy(model, meta)
     elif strat == "s":
-        meta = (0.1, 1.012)  # precision parameter, precision factor (>decay = higher num)
+        meta = (0.01, 1.00022)  # precision parameter, precision factor (>decay = higher num)
         ex = Softmax(meta)
     else:
-        ex = UCB1(rlen, A, 50, 0.999)
+        ex = UCB1(rlen*rlen*A, A, 10, 0.9999)  # num states, num actions, c, decay
 
 
     epoch = 1e5
