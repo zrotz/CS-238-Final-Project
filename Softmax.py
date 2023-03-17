@@ -1,5 +1,5 @@
 from MDP import *
-import math
+from math import exp
 from numpy import random as r
 
 class Softmax:
@@ -8,7 +8,7 @@ class Softmax:
         self._a = meta[1]  # precision factor
 
     def next_action(self, s : int, Q):
-        weights = [math.exp(self._l * (Q[s][0] / 100)), math.exp(self._l * (Q[s][1] / 100))]
+        weights = [exp(self._l * (Q[s][0] / 100)), exp(self._l * (Q[s][1] / 100))]
         t = sum(weights)
         norm_weights = [i/t for i in weights]
         return r.choice([0,1], p=norm_weights)
