@@ -2,15 +2,14 @@ from MDP import *
 from QLearning import *
 from eGreedy import *
 from Softmax import *
+from UCB1 import *
 from RewardViz import *
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-def exploration(model : MDP, lr : float, meta : tuple, epoch : int):
+def exploration(model : MDP, lr : float, ex : eGreedy or Softmax or UCB1, epoch : int):
     viz_r = RewardViz(epoch, "exploration")
     ql = QLearning(model, lr)
-    ex = eGreedy(model, meta)
-    # ex = Softmax(meta)
 
     for _ in tqdm(np.arange(epoch)):
         total_r = 0
@@ -89,23 +88,30 @@ def viz(model, Q):
     plt.savefig("./results/go.png")
 
 def main():
-    s0 = (0, 15, 0) # bus at start, road length, ped. on sidewalk
+    strat = input("Enter exploration strategy (\"e\" = e-greedy; \"s\" = softmax; \"u\" = UCB1): ")
+    assert(strat in ["e", "s", "u"])
+
+    rlen = 15
+    s0 = (0, rlen, 0) # bus at start, road length, ped. on sidewalk
     A = 2 # action space = [0, 1]; len(A) = 2
     cost = (-1, -200, 20) # base line and collision cost and terminal reward
     pr = 0.33 # pedestrian randomness (chance enters road)
     g = 0.6
     model = MDP(s0, A, cost, pr, g)
-
     lr = 0.2 # learning rate
 
-    # e-greedy
-    meta = np.array([0.4, 0.9999], dtype = np.float64) # epsilon, decay rate
+    if strat == "e":
+        meta = np.array([0.4, 0.9999], dtype = np.float64) # epsilon, decay rate
+        ex = eGreedy(model, meta)
+    elif strat == "s":
+        meta = (0.1, 1.012)  # precision parameter, precision factor (>decay = higher num)
+        ex = Softmax(meta)
+    else:
+        ex = UCB1(rlen, A, 50, 0.999)
 
-    # softmax
-    # meta = (0.1, 1.012)  # precision parameter, precision factor (>decay = higher num)
 
     epoch = 1e5
-    Q = exploration(model, lr, meta, epoch)
+    Q = exploration(model, lr, ex, epoch)
     file = input("Save Q to file [.npy]: ")
     np.save(file, Q)
 
