@@ -2,13 +2,12 @@ from MDP import *
 from QLearning import *
 from eGreedy import *
 from Softmax import *
-from GraphViz import *
+from RewardViz import *
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 def exploration(model : MDP, lr : float, meta : tuple, epoch : int):
-    viz_r = RewardViz(epoch, "Rewards during exploration")
-
+    viz_r = RewardViz(epoch, "exploration")
     ql = QLearning(model, lr)
     ex = eGreedy(model, meta)
     # ex = Softmax(meta)
@@ -30,28 +29,29 @@ def exploration(model : MDP, lr : float, meta : tuple, epoch : int):
         model.S.reset()
         ex.decay()
         viz_r.update(total_r)
-
     viz_r.plot_rewards()
     return ql.Q
 
 
-def exploitation(model : MDP, Q, rl : int, epoch : int):
-    viz_r = RewardViz(epoch, "Rewards during exploitation")
+def exploitation(model : MDP, Q, epoch : int):
+    viz_r = RewardViz(epoch, "exploitation")
 
     for _ in tqdm(np.arange(epoch)):
         model.S.reset()
         total_r = 0
 
-        while model.S._bs != (rl - 1): 
-            a = np.argmax(Q[model.S.get_idx()][:])
+        while True: 
+            a = np.argmax(Q[model.S.get_idx(), :])
             r = model.R.reward(model.S, a)
             total_r += r
             bsp, psp, osp = model.T.update(model.S, a)
-            model.S.set_tup((bsp, psp, osp))
-
+            if model.S.get_bs() < model.S.get_rl() - 1:
+                model.S.set_tup((bsp, psp, osp))
+            else:
+                break
         viz_r.update(total_r)
-
     viz_r.plot_rewards()
+    viz_r.histogram()
 
 # Matt's visualization
 def viz(model, Q):
@@ -77,7 +77,7 @@ def viz(model, Q):
             plt.imshow(Q0[i*5+j, :, :], origin = "upper", vmin = Q0.min(), vmax = Q0.max())
     plt.suptitle("Action: stay [left col os = 0; right col os = 1]")
     plt.colorbar()
-    plt.savefig("./stay.png")
+    plt.savefig("./results/stay.png")
 
     for i in np.arange(3): # assume road 15 units long
         for j in np.arange(5):
@@ -86,9 +86,7 @@ def viz(model, Q):
             plt.imshow(Q1[i*5+j, :, :], origin = "upper", vmin = Q1.min(), vmax = Q1.max())
     plt.suptitle("Action: go [left col os = 0; right col os = 1]")
     plt.colorbar()
-    plt.savefig("./go.png")
-
-
+    plt.savefig("./results/go.png")
 
 def main():
     s0 = (0, 15, 0) # bus at start, road length, ped. on sidewalk
@@ -111,17 +109,10 @@ def main():
     file = input("Save Q to file [.npy]: ")
     np.save(file, Q)
 
-    exploitation(model, Q, 15, epoch)
-    # viz(model, Q)
+    sim_number = 5e3
+    exploitation(model, Q, sim_number)
+    viz(model, Q)
 
 
 if __name__ == "__main__":
     main()
-
-# 3/15/23 notes
-# 1) randomly initialize pedestrian position
-# 2) logic pedestrian not enter road when the bus is there => done
-# 3) revise collision check in reward => done
-# 4) decay epsilon with each journey, e = 0.7 dr = 0.999, stop at 1%
-#       end journey at terminal state
-# increase gamma or consider penalizing stay 
