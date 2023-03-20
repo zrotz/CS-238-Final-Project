@@ -12,9 +12,16 @@ class RewardViz:
         self._y.append(y)
     
     def histogram(self):
-        plt.hist(self._y, bins = 20)
+        p = np.percentile(self._y, [25, 50, 75, 95])
+        print("\n25th, 50th, 75th, 95th percentiles: ", p)
+        plt.hist(self._y, bins = np.max(self._y) - np.min(self._y), color = 'b')
+        plt.axvline(p[0], label = "25th percentile", color = 'g')
+        plt.axvline(p[1], label = "50th percentile", color = 'r')
+        plt.axvline(p[2], label = "75th percentile", color = 'k')
+        plt.axvline(p[3], label = "95th percentile", color = 'm')
         plt.xlabel("Reward")
         plt.ylabel("Count")
+        plt.legend()
         plt.savefig("./results/hist.png")
         plt.clf()
 
